@@ -1,0 +1,30 @@
+FROM centos:latest
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONWRITEBYTECODE=1
+ENV DOCKERIZE_VERSION v0.2.0
+
+RUN sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-Linux-*
+RUN sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-Linux-*
+
+RUN yum install wget -y
+RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \  
+    && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+
+ENTRYPOINT ["dockerize", "-wait", "tcp://db:5432", "-timeout", "20s"]
+
+
+RUN yum install git -y
+RUN dnf install python3 -y
+RUN yum install python3-pip -y
+RUN yum install gcc -y
+RUN yum install python3-devel -y
+RUN yum install postgresql-devel -y
+
+RUN git clone https://github.com/tornadoblot/NaverEP.git
+
+COPY requirements.txt ./
+RUN python3 -m pip install -r requirements.txt
+
+ADD command.sh /
+RUN chmod +x /command.sh
+CMD ["/command.sh"]

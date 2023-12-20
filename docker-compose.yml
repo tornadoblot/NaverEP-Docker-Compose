@@ -1,0 +1,36 @@
+version: "3"
+services:
+  web:
+    container_name: web
+    restart: on-failure:10
+    build:
+      context: .
+      dockerfile: webDockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      WAIT_HOSTS: postgres:5432
+      PGHOST: 'db'
+      PGDATABASE: 'naver'
+      PGUSER: 'naver'
+      PGPASSWORD: '0000'
+    depends_on:
+      - db   
+    tty: true
+
+      
+  db:
+    image: postgres:latest
+    container_name: postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: "naver"
+      POSTGRES_PASSWORD: "0000"
+      PGDATA: /var/lib/postgresql/data/initdb
+    volumes:
+      - "./init/:/docker-entrypoint-initdb.d/"
+    
+volumes:
+ data: {}
